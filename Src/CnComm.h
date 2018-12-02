@@ -1,3 +1,4 @@
+// 下面是原版说明
 /*! \mainpage CnComm v1.51 多线程串口通讯库 
  *	\section About 关于
  *  
@@ -29,6 +30,33 @@
  *  \n 2004 v1.0  采用VC命名风格(匈牙利), 在多个WINDOW平台、编译器测试通过, 首次公开发布cnComm;
  *  \n 2002 v0.1  因工作需要开发串口通讯基础类, 传统C++的继承机制, 传统C命名风格;
  */
+
+// 这里是本人的说明
+/*! \mainpage CnComm v1.52 多线程串口通讯库 
+ *	\section About 关于
+ *  
+ *  \n 版本: CnComm v1.52
+ *  \n 用途: WINDOWS/WINCE 多线程串口通讯库
+ *  \n 语言: C++ (ANSI/UNICODE)
+ *  \n 平台: WINDOWS(WIN98/NT/2000/XP/2003/Vista); WINCE 5.0 模拟器; Pocket PC 2003 模拟器;
+ *  \n 硬件: PC串口; 串口服务器; USB串口; 虚拟串口;
+ *  \n 编译: BC++ 5(free tool); C++ BUILDER 4, 5, 6, X; EVC 4(sp4); G++ 3, 4; Intel C++ 7, 8, 9; VC++ 6(sp6), .NET, 2003, 2005;
+ *  \n 作者: zzlhyly
+ *  \n 邮箱: huiyeluanyue@163.com
+ *  \n 维护: 2018.12 -
+ *
+ *  \section Announce 说明
+ *  \n 1) 可以自由使用及传播, 请保留相关声明;                                           
+ *  \n 2) 不推荐直接在本代码上修改, 应通过C++继承扩展机制扩展本代码;                          
+ *  \n 3) 如果您直接修改本代码, 请发一份给我，便于同网友分享您有益的改动;                              
+ *  \n 4) 不兼容cnComm1.4以下版本, 有很大改动，同时也更名CnComm;
+ *  \n 5) 还是那句老话, 水平有限, 错误在所难免, 欢迎来信指正, 收入有限, 时间有限, 不提供除CnComm内部问题外的咨询;
+ *  
+ *  \section Log 日志
+ *  \n 2018.12 v1.52 修正同步+重叠IO时使用Read函数读取数据的长度有误及超时无效的问题
+ 					 修正BlockBuffer的Clear函数与注释不一样的问题，即bDeleteAll没有使用的问题
+ */
+
 
 #ifndef _CN_COMM_H_
 #define _CN_COMM_H_
@@ -433,11 +461,16 @@ public:
 				CN_ASSERT(::ReadFile(hComm_, pBuffer, uReadLength, &uReadReturn, &RO_));
 				dwReadResult += uReadReturn;
 
+				if (dwReadResult >= dwLength)
+				{
+					return dwInCount_ += dwReadResult, dwReadResult;
+				}
+
 				do
 				{
 					if (!::ReadFile(hComm_, (LPBYTE)pBuffer + dwReadResult, 1, &uReadReturn, &RO_))
 					{
-						if (dwWaitTime > 5 && WaitForSingleObject(RO_.hEvent, dwWaitTime) == WAIT_OBJECT_0)
+						if ((dwWaitTime != 0) && (WaitForSingleObject(RO_.hEvent, dwWaitTime) == WAIT_OBJECT_0))
 						{
 							dwEnd = GetTickCount();
 							dwCost = dwEnd>=dwBegin ? dwEnd-dwBegin : DWORD(-1L)-dwBegin+dwEnd;
@@ -451,7 +484,7 @@ public:
 						}
 					}
 				}
-				while (uReadReturn && ++dwReadResult < dwLength);
+				while ((dwReadResult < dwLength) && (dwWaitTime != 0));
 			}
 			return dwInCount_ += dwReadResult, dwReadResult;
 		}
@@ -1137,7 +1170,7 @@ public:
 		//! 析构自动释放空间
 		virtual ~BlockBuffer()
 		{
-			Clear();
+			Clear(true);
 			::DeleteCriticalSection(&C_);
 		}
 		//! 获得起始迭代子
@@ -1331,7 +1364,7 @@ public:
 		//! 清除 \param bDeleteAll 为true时释放所有内存, 否则保留一个内存块以提高效率
 		void Clear(bool bDeleteAll = false)
 		{
-			if (F_ && (F_==L_) && F_->S_>(M_<<2))
+			if (!bDeleteAll && F_ && (F_==L_) && (F_->S_>(M_<<2)))
 			{
                 DWORD S = F_->S_;
                 memset(F_, 0, sizeof(Block)), F_->S_ = S;
