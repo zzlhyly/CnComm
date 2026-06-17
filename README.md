@@ -7,7 +7,7 @@ CnComm 是一个国人开发的跨平台 C++ 串口通信类库，支持 Windows
 ## 功能特性
 
 ### 核心功能
-- **跨平台支持**：Windows (Win98/NT/2000/XP/2003/Vista) 和 Windows CE 5.0
+- **跨平台支持**：Windows (98/NT/2000/XP/Vista/7/8/10/11) 和 Windows CE 5.0
 - **多编译器支持**：BC++ 5, C++ Builder 4/5/6/X, EVC 4(sp4), G++ 3/4, Intel C++ 7/8/9, VC++ 6(sp6)/.NET/2003/2005
 - **ANSI/UNICODE 支持**：完整的字符集支持
 - **硬件兼容**：PC 串口、串口服务器、USB 串口、虚拟串口
@@ -383,7 +383,7 @@ enum OptionEnum
 
 | 平台 | 版本 | 状态 |
 |------|------|------|
-| Windows | 98, NT, 2000, XP, 2003, Vista | ✓ 完全支持 |
+| Windows | 98, NT, 2000, XP, Vista, 7, 8, 10, 11 | ✓ 完全支持 |
 | Windows CE | 5.0 | ✓ 完全支持 |
 | Pocket PC | 2003 | ✓ 完全支持 |
 

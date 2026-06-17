@@ -7,7 +7,7 @@ CnComm is a cross-platform C++ serial communication library developed for Window
 ## Features
 
 ### Core Features
-- **Cross-platform Support**: Windows (Win98/NT/2000/XP/2003/Vista) and Windows CE 5.0
+- **Cross-platform Support**: Windows (98/NT/2000/XP/Vista/7/8/10/11) and Windows CE 5.0
 - **Multi-compiler Support**: BC++ 5, C++ Builder 4/5/6/X, EVC 4(sp4), G++ 3/4, Intel C++ 7/8/9, VC++ 6(sp6)/.NET/2003/2005
 - **ANSI/UNICODE Support**: Full character set support
 - **Hardware Compatibility**: PC serial ports, serial servers, USB serial ports, virtual serial ports
@@ -383,7 +383,7 @@ enum OptionEnum
 
 | Platform | Version | Status |
 |----------|---------|--------|
-| Windows | 98, NT, 2000, XP, 2003, Vista | ✓ Fully Supported |
+| Windows | 98, NT, 2000, XP, Vista, 7, 8, 10, 11 | ✓ Fully Supported |
 | Windows CE | 5.0 | ✓ Fully Supported |
 | Pocket PC | 2003 | ✓ Fully Supported |
 
