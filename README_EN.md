@@ -8,7 +8,7 @@ CnComm is a cross-platform C++ serial communication library developed for Window
 
 ### Core Features
 - **Cross-platform Support**: Windows (98/NT/2000/XP/Vista/7/8/10/11) and Windows CE 5.0
-- **Multi-compiler Support**: BC++ 5, C++ Builder 4/5/6/X, EVC 4(sp4), G++ 3/4, Intel C++ 7/8/9, VC++ 6(sp6)/.NET/2003/2005
+- **Multi-compiler Support**: VC++ 6~2022, C++ Builder 4~12, GCC/G++ 3~13, Intel C++ 7~2024, EVC 4
 - **ANSI/UNICODE Support**: Full character set support
 - **Hardware Compatibility**: PC serial ports, serial servers, USB serial ports, virtual serial ports
 
@@ -124,7 +124,7 @@ void TestBlockBuffer()
     bb.Write("0123456789"); // Write 10 bytes
     bb.Read(buf, 5); // Read 5 bytes
     bb.Clear(); // Clear buffer
-    printf("%s\n", buf);
+    printf("%s\n", buf); // Output: 01234
     
     // Get free pointer and write directly
     char *pFree = (char*)bb.GetFreePtr(10);
@@ -132,9 +132,10 @@ void TestBlockBuffer()
     bb.Release(10); // Release 10 bytes
     
     // Copy data
-    bb.Copy(buf, 5, 10); // Copy 5 bytes from offset 10
+    bb.Copy(buf, 5, 0); // Copy 5 bytes from offset 0
+    printf("%s\n", buf); // Output: 01234
+    
     bb.Read(NULL, 10); // Delete 10 bytes
-    printf("%s\n", buf);
 }
 ```
 
@@ -312,27 +313,57 @@ void SetWaitEvent(DWORD dwEvent = CN_COMM_WAIT_EVENT);
 ```cpp
 // Write data
 DWORD Write(LPCVOID pData, DWORD dwLength);
+DWORD Write(const char* lpBuf);      // Write ANSI string
+DWORD Write(const wchar_t* lpBuf);   // Write UNICODE string
+
+// Thread-safe write
+DWORD SafeWrite(LPCVOID lpBuf, DWORD dwSize);
+DWORD SafeWrite(const char* lpBuf);
+DWORD SafeWrite(const wchar_t* lpBuf);
 
 // Read data
 DWORD Read(LPVOID pData, DWORD dwLength);
 
-// Get free pointer
-LPVOID GetFreePtr(DWORD dwLength);
+// Thread-safe read
+DWORD SafeRead(LPVOID lpBuf, DWORD dwSize);
 
-// Release space
-void Release(DWORD dwLength);
+// Read string
+char* ReadString(char* lpBuf, DWORD dMaxSize);
+wchar_t* ReadString(wchar_t* lpBuf, DWORD dMaxSize);
+
+// Thread-safe read string
+char* SafeReadString(char* lpBuf, DWORD dMaxSize);
+wchar_t* SafeReadString(wchar_t* lpBuf, DWORD dMaxSize);
 
 // Copy data
-DWORD Copy(LPVOID pData, DWORD dwLength, DWORD dwOffset = 0);
+DWORD Copy(LPVOID lpBuf, DWORD dwSize, DWORD dwStart = 0);
+
+// Thread-safe copy
+DWORD SafeCopy(LPVOID lpBuf, DWORD dwSize, DWORD dwStart = 0);
+
+// Get free pointer
+LPVOID GetFreePtr(DWORD dwSize = 0);
+
+// Release space
+void Release(DWORD dwSize);
 
 // Clear buffer
-void Clear();
+void Clear(bool bDeleteAll = false);
+
+// Thread-safe clear
+void SafeClear(bool bDeleteAll = false);
 
 // Get data size
 DWORD Size();
 
-// Get safe size
+// Thread-safe get size
 DWORD SafeSize();
+
+// Get free space size
+DWORD FreeSize();
+
+// Iterator
+Iterator Begin();
 ```
 
 ### Option Enumeration (OptionEnum)
@@ -356,27 +387,32 @@ enum OptionEnum
 ### Message Constants
 
 ```cpp
-#define ON_COM_RECEIVE   ON_COM_MSG_BASE + 0  // Data received
-#define ON_COM_CTS       ON_COM_MSG_BASE + 1  // CTS signal change
-#define ON_COM_DSR       ON_COM_MSG_BASE + 2  // DSR signal change
-#define ON_COM_RING      ON_COM_MSG_BASE + 3  // Ring signal
-#define ON_COM_RLSD      ON_COM_MSG_BASE + 4  // RLSD signal change
-#define ON_COM_BREAK     ON_COM_MSG_BASE + 5  // Break signal
-#define ON_COM_TXEMPTY   ON_COM_MSG_BASE + 6  // Transmit buffer empty
-#define ON_COM_ERROR     ON_COM_MSG_BASE + 7  // Error event
-#define ON_COM_RXFLAG    ON_COM_MSG_BASE + 8  // Receive flag
-#define ON_COM_POWER     ON_COM_MSG_BASE + 9  // Power event
+#define ON_COM_RECEIVE   ON_COM_MSG_BASE + 0   // Data received (EV_RXCHAR)
+#define ON_COM_RXCHAR    ON_COM_MSG_BASE + 0   // Data received (alias)
+#define ON_COM_CTS       ON_COM_MSG_BASE + 1   // CTS signal change
+#define ON_COM_DSR       ON_COM_MSG_BASE + 2   // DSR signal change
+#define ON_COM_RING      ON_COM_MSG_BASE + 3   // Ring signal
+#define ON_COM_RLSD      ON_COM_MSG_BASE + 4   // RLSD signal change
+#define ON_COM_BREAK     ON_COM_MSG_BASE + 5   // Break signal
+#define ON_COM_TXEMPTY   ON_COM_MSG_BASE + 6   // Transmit buffer empty
+#define ON_COM_ERROR     ON_COM_MSG_BASE + 7   // Error event
+#define ON_COM_RXFLAG    ON_COM_MSG_BASE + 8   // Receive flag
+#define ON_COM_POWER     ON_COM_MSG_BASE + 9   // Power event
+#define ON_COM_EVENT1    ON_COM_MSG_BASE + 10  // Event 1
+#define ON_COM_EVENT2    ON_COM_MSG_BASE + 11  // Event 2
+#define ON_COM_RX80FULL  ON_COM_MSG_BASE + 12  // Receive buffer 80% full
+#define ON_COM_PERR      ON_COM_MSG_BASE + 13  // Print error
 ```
 
 ## Compiler Compatibility
 
 | Compiler | Version | Status |
 |----------|---------|--------|
-| Visual C++ | 6.0, .NET, 2003, 2005 | ✓ Fully Supported |
-| C++ Builder | 4, 5, 6, X | ✓ Fully Supported |
+| Visual C++ | 6.0, .NET, 2003, 2005, 2008, 2010, 2012, 2013, 2015, 2017, 2019, 2022 | ✓ Fully Supported |
+| C++ Builder | 4, 5, 6, X, 10, 11, 12 | ✓ Fully Supported |
 | Borland C++ | 5.0 (Free Tool) | ✓ Fully Supported |
-| GCC/G++ | 3.x, 4.x | ✓ Fully Supported |
-| Intel C++ | 7, 8, 9 | ✓ Fully Supported |
+| GCC/G++ | 3.x, 4.x, 5.x, 6.x, 7.x, 8.x, 9.x, 10.x, 11.x, 12.x, 13.x | ✓ Fully Supported |
+| Intel C++ | 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 2021, 2022, 2023, 2024 | ✓ Fully Supported |
 | EVC | 4.0 (SP4) | ✓ Fully Supported (Windows CE) |
 
 ## Platform Support
@@ -416,11 +452,21 @@ Use GitHub Issues to report problems. Please include:
 
 ### Development Environment
 
-- Windows XP/Vista/7/8/10
-- Visual Studio 2005 or later
-- Or other supported compilers
+- Windows 7/8/10/11
+- Visual Studio 2005 or later (recommended 2015+)
+- Or other supported compilers (see compiler compatibility table)
 
 ## Version History
+
+### v1.53 (2026.06)
+- Fixed OnRLSD() sending wrong message constant (MS_RLSD_ON → ON_COM_RLSD)
+- Fixed WriteModel() resetting wrong event handle (hWatchEvent_ → hWriteEvent_)
+- Fixed BeginThread() checking wrong thread ID variable
+- Fixed ReadString() integer underflow when dwLength==0
+- Fixed fprintf format string vulnerability
+- Replaced vsprintf with _vsnprintf to prevent buffer overflow
+- Added parentheses to all message macros to prevent operator precedence errors
+- Improved README documentation
 
 ### v1.52 (2018.12)
 - Fixed timeout and efficiency issues when using Read function with synchronous+callback IO
