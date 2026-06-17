@@ -30,3 +30,15 @@
 *.exe
 *.out
 *.app
+
+# IDE and editor files
+.omo/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+Thumbs.db
